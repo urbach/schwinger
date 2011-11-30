@@ -21,5 +21,6 @@ void calculate_statistics_data(statistics_data *data);
 void calculate_statistics_array(statistics_data *data, int array_size);
 
 void print_statistics_data(statistics_data *data, const char *name);
+void print_statistics_array(statistics_data *data, const char *name, int array_size);
 
 #endif

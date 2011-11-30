@@ -43,3 +43,13 @@ void print_statistics_data(statistics_data *data, const char *name)
   calculate_statistics_data(data);
   printf("\t %-28s%2.6lf +/- %2.6lf (e = %02i%%)\n", name, data->mean, data->error, (int)(100.0*data->error/data->mean));
 }
+
+void print_statistics_array(statistics_data *data, const char *name, int array_size)
+{
+  for (int i = 0; i < array_size; i ++)
+  {
+    char name_buffer[1000];
+    sprintf(name_buffer, "%s[%i]:", name, i);
+    print_statistics_data(&data[i], name_buffer);
+  }
+}

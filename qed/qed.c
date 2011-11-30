@@ -194,6 +194,9 @@ int main(int argc, char **argv)
   statistics_data cc_statistics; reset_statistics_data(&cc_statistics);
   statistics_data dh_statistics; reset_statistics_data(&dh_statistics);
   statistics_data expdh_statistics; reset_statistics_data(&expdh_statistics);
+  statistics_data correlation_statistics[X2];
+  for (int t = 0; t < X2; t ++)
+    reset_statistics_data(&correlation_statistics[t]);
   for(i = 0; i < g_measurements; i ++)
   {
     g_cgiterations1 = 0;
@@ -210,7 +213,7 @@ int main(int argc, char **argv)
     double cc  = chiral_condensate();
 
     for (int t = 0; t < X2; t ++)
-      printf("%f\n", pion_correlation_function(t));
+      add_statistics_entry(&correlation_statistics[t], pion_correlation_function(t));
 
     double dh  = ham_old - ham;
     add_statistics_entry(&mp_statistics, mp);
@@ -252,7 +255,8 @@ int main(int argc, char **argv)
   print_statistics_data(&cc_statistics, "Chiral Condensate:");
   print_statistics_data(&dh_statistics, "-Delta H:");
   print_statistics_data(&expdh_statistics, "exp(-Delta H):");
-  printf("\n\n");
+  printf("\n");
+  print_statistics_array(correlation_statistics, "Pion Correlation", X2);
   
   free(left1);
   free(left2);
