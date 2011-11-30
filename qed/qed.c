@@ -5,6 +5,7 @@
 #include <getopt.h>
 #include <string.h>
 
+#include "statistics.h"
 #include "lattice.h"
 #include "hmc.h"
 #include "fields.h"
@@ -137,11 +138,6 @@ int main(int argc, char **argv)
   int total_updates = 0;   //Total number of updates
   /* Containers for the mean plaquette, Polyakov loop and chiral condensate */
   /* and corresponding errors etc. */
-  double mp = 0.0, dmp = 0.0, amp = 0.0, pl = 0.0, dpl = 0.0, apl = 0.0, cc = 0.0, dcc = 0.0, acc = 0.0; 
-  double emp, epl, ecc;
-  // Containers for the mean value of Delta H and exp(-Delta H)
-  double dh = 0, ddh = 0, adh = 0, edh = 0;
-  double expdh = 0, dexpdh = 0, aexpdh = 0, eexpdh = 0;
   double total_cgiterations1 = 0, total_cgiterations2 = 0;
   /* Initialize the random number generator */
   rlxd_init(2, 123456); 
@@ -192,7 +188,13 @@ int main(int argc, char **argv)
   gauge_force_sum = 0;
   PF1_force_sum = 0;
   PF2_force_sum = 0;
-  for(i=0; i<g_measurements; i++)
+
+  statistics_data mp_statistics; reset_statistics_data(&mp_statistics);
+  statistics_data pl_statistics; reset_statistics_data(&pl_statistics);
+  statistics_data cc_statistics; reset_statistics_data(&cc_statistics);
+  statistics_data dh_statistics; reset_statistics_data(&dh_statistics);
+  statistics_data expdh_statistics; reset_statistics_data(&expdh_statistics);
+  for(i = 0; i < g_measurements; i ++)
   {
     g_cgiterations1 = 0;
     g_cgiterations2 = 0;
@@ -203,27 +205,25 @@ int main(int argc, char **argv)
     accepted_cur += update();
     accepted += accepted_cur;
     /* Measurements */
-    mp  = mean_plaquette();
-    pl  = polyakov_loop();
-    cc  = chiral_condensate();
-    dh  = ham_old - ham;
-    amp  += mp;    //Mean plaquette
-    dmp  += mp*mp; // ... and its dispersion - for error estimation
-    apl  += pl;    //Polyakov loop
-    dpl  += pl*pl;
-    acc  += cc;    //Chiral condensate
-    dcc  += cc*cc;
-    adh += dh;
-    ddh += dh * dh;
-    expdh = exp(dh);
-    aexpdh += expdh;
-    dexpdh += expdh * expdh;
+    double mp  = mean_plaquette();
+    double pl  = polyakov_loop();
+    double cc  = chiral_condensate();
+
+    for (int t = 0; t < X2; t ++)
+      printf("%f\n", pion_correlation_function(t));
+
+    double dh  = ham_old - ham;
+    add_statistics_entry(&mp_statistics, mp);
+    add_statistics_entry(&pl_statistics, pl);
+    add_statistics_entry(&cc_statistics, cc);
+    add_statistics_entry(&dh_statistics, dh);
+    add_statistics_entry(&expdh_statistics, exp(dh));
     
     total_cgiterations1 += g_cgiterations1;
     total_cgiterations2 += g_cgiterations2;
     
     printf("\t Step %04i,\t mp = %2.4lf,\t pl = %2.4lf,\t cc = %2.4lf,\t dh = %2.4lf,\tcg1 = %d,\tcg2 = %d,\tacc = %d\n", i, mp, pl, cc, -dh, g_cgiterations1, g_cgiterations2, accepted_cur);
-  };
+  }
   
   /* Some output for diagnostics */
   printf("\n\n Algorithm configuration:\n");
@@ -246,28 +246,12 @@ int main(int argc, char **argv)
   printf("\t Runtime / seconds:                    %2.2lf\n", (double)(clock() - clock_start)/(double)CLOCKS_PER_SEC);
   
   /* Measurement results */
-  amp = amp/(double)g_measurements;
-  apl = apl/(double)g_measurements;
-  acc = acc/(double)g_measurements;
-  adh = adh/(double)g_measurements;
-  aexpdh = aexpdh/(double)g_measurements;
-  dmp = dmp/(double)g_measurements - amp*amp;
-  dpl = dpl/(double)g_measurements - apl*apl;
-  dcc = dcc/(double)g_measurements - acc*acc;
-  ddh = ddh/(double)g_measurements - adh*adh;
-  dexpdh = dexpdh/(double)g_measurements - aexpdh*acc;
-  emp = sqrt(dmp/(double)(g_measurements - 1)); //Errors of corresponding mean values
-  epl = sqrt(dpl/(double)(g_measurements - 1));
-  ecc = sqrt(dcc/(double)(g_measurements - 1));
-  edh = sqrt(ddh/(double)(g_measurements - 1));
-  eexpdh = sqrt(dexpdh/(double)(g_measurements - 1));
-  
   printf("\n\n Mean values:\n");
-  printf("\t Plaquette:                  %2.6lf +/- %2.6lf (e = %02i%%)\n", amp, emp, (int)(100.0*emp/amp));
-  printf("\t Polyakov loop:              %2.6lf +/- %2.6lf (e = %02i%%)\n", apl, epl, (int)(100.0*epl/apl));
-  printf("\t Chiral Condensate:          %2.6lf +/- %2.6lf (e = %02i%%)\n", acc, ecc, (int)(100.0*ecc/acc));
-  printf("\t -Delta H:                   %2.6lf +/- %2.6lf (e = %02i%%)\n", adh, edh, (int)(100.0*edh/adh));
-  printf("\t exp(-Delta H):              %2.6lf +/- %2.6lf (e = %02i%%)\n", aexpdh, eexpdh, (int)(100.0*eexpdh/aexpdh));
+  print_statistics_data(&mp_statistics, "Plaquette:");
+  print_statistics_data(&pl_statistics, "Polyakov loop:");
+  print_statistics_data(&cc_statistics, "Chiral Condensate:");
+  print_statistics_data(&dh_statistics, "-Delta H:");
+  print_statistics_data(&expdh_statistics, "exp(-Delta H):");
   printf("\n\n");
   
   free(left1);

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6561B0F414867BCF0096B9CB /* statistics.c in Sources */ = {isa = PBXBuildFile; fileRef = 6561B0F314867BCF0096B9CB /* statistics.c */; };
 		65AC1ABA14698B2B00336FFC /* leapfrog2.c in Sources */ = {isa = PBXBuildFile; fileRef = 65AC1AB814698B2B00336FFC /* leapfrog2.c */; };
 		65AC1ABE14698B4400336FFC /* rec_lf_integrator.c in Sources */ = {isa = PBXBuildFile; fileRef = 65AC1ABC14698B4400336FFC /* rec_lf_integrator.c */; };
 		65E7DFF014600AD300095D43 /* gauss.c in Sources */ = {isa = PBXBuildFile; fileRef = 65E7DFD614600AD300095D43 /* gauss.c */; };
@@ -49,6 +50,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		6561B0F314867BCF0096B9CB /* statistics.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = statistics.c; sourceTree = "<group>"; };
+		6561B0F614867BD70096B9CB /* statistics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = statistics.h; sourceTree = "<group>"; };
 		65AC1AB814698B2B00336FFC /* leapfrog2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = leapfrog2.c; sourceTree = "<group>"; };
 		65AC1AB914698B2B00336FFC /* leapfrog2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = leapfrog2.h; sourceTree = "<group>"; };
 		65AC1ABC14698B4400336FFC /* rec_lf_integrator.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rec_lf_integrator.c; sourceTree = "<group>"; };
@@ -160,6 +163,8 @@
 				65E7DFEC14600AD300095D43 /* linalg.h */,
 				65E7DFED14600AD300095D43 /* measurements.c */,
 				65E7DFEE14600AD300095D43 /* measurements.h */,
+				6561B0F314867BCF0096B9CB /* statistics.c */,
+				6561B0F614867BD70096B9CB /* statistics.h */,
 				65E7DFEF14600AD300095D43 /* qed.c */,
 			);
 			path = qed;
@@ -282,6 +287,7 @@
 				65E7E01414600F7B00095D43 /* qed.c in Sources */,
 				65AC1ABA14698B2B00336FFC /* leapfrog2.c in Sources */,
 				65AC1ABE14698B4400336FFC /* rec_lf_integrator.c in Sources */,
+				6561B0F414867BCF0096B9CB /* statistics.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
