@@ -1,0 +1,51 @@
+# Project: Schwinger
+# Makefile created by Dev-C++ 4.9.9.2
+
+CPP  = g++.exe
+CC   = gcc.exe
+WINDRES = windres.exe
+RES  = 
+OBJ  = qed.o rand/gauss.o rand/ranlxd.o fields.o hmc.o lattice.o measurements.o linalg.o $(RES)
+LINKOBJ  = qed.o rand/gauss.o rand/ranlxd.o fields.o hmc.o lattice.o measurements.o linalg.o $(RES)
+LIBS =  -L"C:/Dev-Cpp/lib"  
+INCS =  -I"C:/Dev-Cpp/include"  -I"G:/LAT/include" 
+CXXINCS =  -I"C:/Dev-Cpp/lib/gcc/mingw32/3.4.2/include"  -I"C:/Dev-Cpp/include/c++/3.4.2/backward"  -I"C:/Dev-Cpp/include/c++/3.4.2/mingw32"  -I"C:/Dev-Cpp/include/c++/3.4.2"  -I"C:/Dev-Cpp/include"  -I"G:/LAT/include" 
+BIN  = qed.exe
+CXXFLAGS = $(CXXINCS)   -traditional-cpp
+CFLAGS = $(INCS) -std=c99   -traditional-cpp
+RM = rm -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before qed.exe all-after
+
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CPP) $(LINKOBJ) -o "qed.exe" $(LIBS)
+
+qed.o: qed.c
+	$(CPP) -c qed.c -o qed.o $(CXXFLAGS)
+
+rand/gauss.o: rand/gauss.c
+	$(CPP) -c rand/gauss.c -o rand/gauss.o $(CXXFLAGS)
+
+rand/ranlxd.o: rand/ranlxd.c
+	$(CPP) -c rand/ranlxd.c -o rand/ranlxd.o $(CXXFLAGS)
+
+fields.o: fields.c
+	$(CPP) -c fields.c -o fields.o $(CXXFLAGS)
+
+hmc.o: hmc.c
+	$(CPP) -c hmc.c -o hmc.o $(CXXFLAGS)
+
+lattice.o: lattice.c
+	$(CPP) -c lattice.c -o lattice.o $(CXXFLAGS)
+
+measurements.o: measurements.c
+	$(CPP) -c measurements.c -o measurements.o $(CXXFLAGS)
+
+linalg.o: linalg.c
+	$(CPP) -c linalg.c -o linalg.o $(CXXFLAGS)
