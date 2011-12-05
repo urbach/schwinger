@@ -28,9 +28,9 @@
 #include "fields.h"
 #include "dirac.h"
 
-double gauge_force_sum = 0;
-double PF1_force_sum = 0;
-double PF2_force_sum = 0;
+double gauge_force = 0;
+double PF1_force = 0;
+double PF2_force = 0;
 
 //#define _DEBUG_
 
@@ -119,7 +119,7 @@ void update_momenta_PF2(const double dtau) {
     gp1[i] = gp1[i] - dtau*(- f1);
     gp2[i] = gp2[i] - dtau*(- f2);
   }
-  PF2_force_sum += dtau * sqrt(sqsum);
+  PF2_force += dtau * sqrt(sqsum);
 #ifdef _DEBUG_
   printf("force PF2 \t ||f|| = %e,\t dtau*||f|| = %e\n", 
 	  sqrt(sqsum)/((double)GRIDPOINTS), dtau*sqrt(sqsum)/((double)GRIDPOINTS));
@@ -140,7 +140,7 @@ void update_momenta_PF1(const double dtau) {
     gp1[i] = gp1[i] - dtau*(- f1);
     gp2[i] = gp2[i] - dtau*(- f2);
   }
-  PF1_force_sum += dtau * sqrt(sqsum);
+  PF1_force += dtau * sqrt(sqsum);
 #ifdef _DEBUG_
   printf("force PF1 \t ||f|| = %e,\t dtau*||f|| = %e\n", 
 	  sqrt(sqsum)/((double)GRIDPOINTS), dtau*sqrt(sqsum)/((double)GRIDPOINTS));
@@ -158,7 +158,7 @@ void update_momenta_gauge(const double dtau) {
     gp1[i] = gp1[i] - dtau*f1;
     gp2[i] = gp2[i] - dtau*f2;
   }
-  gauge_force_sum += dtau * sqrt(sqsum);
+  gauge_force += dtau * sqrt(sqsum);
 #ifdef _DEBUG_
   printf("gauge momenta\t ||f|| = %e,\t dtau*||f|| = %e\n", 
 	 sqrt(sqsum)/((double)GRIDPOINTS), dtau*sqrt(sqsum)/((double)GRIDPOINTS));

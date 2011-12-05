@@ -22,9 +22,9 @@
 #ifndef _2MN_INTEGRATOR_H
 #define _2MN_INTEGRATOR_H
 
-extern double gauge_force_sum;
-extern double PF1_force_sum;
-extern double PF2_force_sum;
+extern double gauge_force;
+extern double PF1_force;
+extern double PF2_force;
 
 void MN2_integrator(const int n1, const int n2, const double tau, const double lambda);
 void update_momenta_fermion(const double dtau);

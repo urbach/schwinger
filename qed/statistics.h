@@ -20,7 +20,10 @@ void add_statistics_entry(statistics_data *data, double entry);
 void calculate_statistics_data(statistics_data *data);
 void calculate_statistics_array(statistics_data *data, int array_size);
 
-void print_statistics_data(statistics_data *data, const char *name);
-void print_statistics_array(statistics_data *data, const char *name, int array_size);
+void print_statistics_data(statistics_data *data, const char *name, double factor);
+void print_statistics_array(statistics_data *data, const char *name, int array_size, double factor);
+
+double autocorrelation_Gamma(double *measurements, double mean, int N, int n);
+double autocorrelation_time(double *measurements, int N);
 
 #endif

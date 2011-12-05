@@ -185,22 +185,28 @@ int main(int argc, char **argv)
   R = 0;               //Total number of rejected configurations
   
   printf("\n Generation: \n\n");
-  gauge_force_sum = 0;
-  PF1_force_sum = 0;
-  PF2_force_sum = 0;
-
+  
+  statistics_data gauge_force_statistics; reset_statistics_data(&gauge_force_statistics);
+  statistics_data PF1_force_statistics; reset_statistics_data(&PF1_force_statistics);
+  statistics_data PF2_force_statistics; reset_statistics_data(&PF2_force_statistics);
   statistics_data mp_statistics; reset_statistics_data(&mp_statistics);
   statistics_data pl_statistics; reset_statistics_data(&pl_statistics);
   statistics_data cc_statistics; reset_statistics_data(&cc_statistics);
   statistics_data dh_statistics; reset_statistics_data(&dh_statistics);
   statistics_data expdh_statistics; reset_statistics_data(&expdh_statistics);
   statistics_data correlation_statistics[X2];
+  
+  double *mp_measurements = malloc(g_measurements * sizeof(double));
   for (int t = 0; t < X2; t ++)
     reset_statistics_data(&correlation_statistics[t]);
+  int i_accepted = 0;
   for(i = 0; i < g_measurements; i ++)
   {
     g_cgiterations1 = 0;
     g_cgiterations2 = 0;
+    gauge_force = 0;
+    PF1_force = 0;
+    PF2_force = 0;
     /* do g_intermediate updates before measurement */
     int accepted_cur = 0;
     for (l=0; l<g_intermediate; l++)
@@ -211,16 +217,28 @@ int main(int argc, char **argv)
     double mp  = mean_plaquette();
     double pl  = polyakov_loop();
     double cc  = chiral_condensate();
-
-    for (int t = 0; t < X2; t ++)
-      add_statistics_entry(&correlation_statistics[t], pion_correlation_function(t));
-
     double dh  = ham_old - ham;
-    add_statistics_entry(&mp_statistics, mp);
-    add_statistics_entry(&pl_statistics, pl);
-    add_statistics_entry(&cc_statistics, cc);
-    add_statistics_entry(&dh_statistics, dh);
-    add_statistics_entry(&expdh_statistics, exp(dh));
+    
+    if (accepted_cur >= 1)
+    {
+      add_statistics_entry(&gauge_force_statistics, gauge_force);
+      add_statistics_entry(&PF1_force_statistics, PF1_force);
+      add_statistics_entry(&PF2_force_statistics, PF2_force);
+      
+      // TODO: always measure these (not only when accepted!)
+      for (int t = 0; t < X2; t ++)
+        add_statistics_entry(&correlation_statistics[t], pion_correlation_function(t));
+      
+      add_statistics_entry(&mp_statistics, mp);
+      add_statistics_entry(&pl_statistics, pl);
+      add_statistics_entry(&cc_statistics, cc);
+      add_statistics_entry(&dh_statistics, dh);
+      add_statistics_entry(&expdh_statistics, exp(dh));
+      
+      mp_measurements[i_accepted] = mp;
+      
+      i_accepted ++;
+    }
     
     total_cgiterations1 += g_cgiterations1;
     total_cgiterations2 += g_cgiterations2;
@@ -240,23 +258,27 @@ int main(int argc, char **argv)
   printf("\t Outer loop CG iterations per update:  %2.2lf\n", (double)total_cgiterations2/(double)total_updates);
   printf("\t Inner loop CG iterations per solve:   %2.2lf\n", (double)total_cgiterations1/(double)total_updates/(n_steps[2]*n_steps[1]));
   printf("\t Outer loop CG iterations per solve:   %2.2lf\n\n", (double)total_cgiterations2/(double)total_updates/(n_steps[2]));
-  printf("\t Gauge force per update:               %2.6lf\n", (double)gauge_force_sum/(double)total_updates*tau);
-  printf("\t Inner loop force per update:          %2.6lf\n", (double)PF1_force_sum/(double)total_updates*tau);
-  printf("\t Outer loop force per update:          %2.6lf\n", (double)PF2_force_sum/(double)total_updates*tau);
-  printf("\t Gauge force per application:          %2.6lf\n", (double)gauge_force_sum/(double)total_updates*tau/(n_steps[2]*n_steps[1]*n_steps[0]));
-  printf("\t Inner loop force per application:     %2.6lf\n", (double)PF1_force_sum/(double)total_updates*tau/(n_steps[2]*n_steps[1]));
-  printf("\t Outer loop force per application:     %2.6lf\n\n", (double)PF2_force_sum/(double)total_updates*tau/(n_steps[2]));
   printf("\t Runtime / seconds:                    %2.2lf\n", (double)(clock() - clock_start)/(double)CLOCKS_PER_SEC);
+  
+  print_statistics_data(&gauge_force_statistics, "Gauge force per update:", tau);
+  print_statistics_data(&PF1_force_statistics, "Inner loop force per update:", tau);
+  print_statistics_data(&PF2_force_statistics, "Outer loop force per update:", tau);
+  print_statistics_data(&gauge_force_statistics, "Gauge force per application:", tau/(n_steps[2]*n_steps[1]*n_steps[0]));
+  print_statistics_data(&PF1_force_statistics, "Inner loop force per application:", tau/(n_steps[2]*n_steps[1]));
+  print_statistics_data(&PF2_force_statistics, "Outer loop force per application:", tau/(n_steps[2]));
   
   /* Measurement results */
   printf("\n\n Mean values:\n");
-  print_statistics_data(&mp_statistics, "Plaquette:");
-  print_statistics_data(&pl_statistics, "Polyakov loop:");
-  print_statistics_data(&cc_statistics, "Chiral Condensate:");
-  print_statistics_data(&dh_statistics, "-Delta H:");
-  print_statistics_data(&expdh_statistics, "exp(-Delta H):");
+  print_statistics_data(&mp_statistics, "Plaquette:", 1);
+  print_statistics_data(&pl_statistics, "Polyakov loop:", 1);
+  print_statistics_data(&cc_statistics, "Chiral Condensate:", 1);
+  print_statistics_data(&dh_statistics, "-Delta H:", 1);
+  print_statistics_data(&expdh_statistics, "exp(-Delta H):", 1);
   printf("\n");
-  print_statistics_array(correlation_statistics, "Pion Correlation", X2);
+  print_statistics_array(correlation_statistics, "Pion Correlation", X2, 1);
+  
+  printf("%g\n", autocorrelation_time(mp_measurements, i_accepted));
+  free(mp_measurements);
   
   free(left1);
   free(left2);
