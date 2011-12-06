@@ -200,7 +200,6 @@ int main(int argc, char **argv)
   double *mp_measurements = malloc(g_measurements * sizeof(double));
   for (int t = 0; t < X2; t ++)
     reset_statistics_data(&correlation_statistics[t]);
-  int i_accepted = 0;
   for(i = 0; i < g_measurements; i ++)
   {
     g_cgiterations1 = 0;
@@ -225,21 +224,18 @@ int main(int argc, char **argv)
       add_statistics_entry(&gauge_force_statistics, gauge_force);
       add_statistics_entry(&PF1_force_statistics, PF1_force);
       add_statistics_entry(&PF2_force_statistics, PF2_force);
-      
-      // TODO: always measure these (not only when accepted!)
-      for (int t = 0; t < X2; t ++)
-        add_statistics_entry(&correlation_statistics[t], pion_correlation_function(t));
-      
-      add_statistics_entry(&mp_statistics, mp);
-      add_statistics_entry(&pl_statistics, pl);
-      add_statistics_entry(&cc_statistics, cc);
-      add_statistics_entry(&dh_statistics, dh);
-      add_statistics_entry(&expdh_statistics, exp(dh));
-      
-      mp_measurements[i_accepted] = mp;
-      
-      i_accepted ++;
     }
+    
+    for (int t = 0; t < X2; t ++)
+      add_statistics_entry(&correlation_statistics[t], pion_correlation_function(t));
+    
+    add_statistics_entry(&mp_statistics, mp);
+    add_statistics_entry(&pl_statistics, pl);
+    add_statistics_entry(&cc_statistics, cc);
+    add_statistics_entry(&dh_statistics, dh);
+    add_statistics_entry(&expdh_statistics, exp(dh));
+    
+    mp_measurements[i] = mp;
     
     total_cgiterations1 += g_cgiterations1;
     total_cgiterations2 += g_cgiterations2;
