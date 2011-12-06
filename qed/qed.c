@@ -15,13 +15,13 @@
 
 /* global variables */
 int g_thermalize = 500;      //Number of MC updates for thermalization
-int g_measurements = 1000;  //Number of measurements (statistically independent configurations)
+int g_measurements = 500;  //Number of measurements (statistically independent configurations)
 int g_intermediate = 0;    //Number of MC updates between the measurements
 /* extern in hmc.h      */
 double ham = 0, ham_old = 0;
 /* The critical mass at beta=1.0 is about 0.32 */
-double g_mass = -0.23125;       //Fermion mass
-double g_musqr = 0.21;
+double g_mass = -0.06;       //Fermion mass
+double g_musqr = 0.2;
 
 double beta = 1.0;       //Coupling constant for the gauge field
 
@@ -36,7 +36,7 @@ void load_gauge(const char *filename);
 int n_steps[3];
 /* list of function pointers to the momentum update functions */
 up_m up_momenta[3];
-int no_timescales = 2;
+int no_timescales = 3;
 double tau = 1.;
 
 int main(int argc, char **argv) 
@@ -128,10 +128,10 @@ int main(int argc, char **argv)
   {
     up_momenta[1] = &update_momenta_PF1;
     if (!n_steps[1])
-      n_steps[1] = 2;
+      n_steps[1] = 1;
     up_momenta[2] = &update_momenta_PF2;
     if (!n_steps[2])
-      n_steps[2] = 2;
+      n_steps[2] = 10;
   }
   
   int i, l;
@@ -278,7 +278,7 @@ int main(int argc, char **argv)
   printf("\n");
   print_statistics_array(correlation_statistics, "Pion Correlation", X2, 1);
   
-  printf("%g\n", autocorrelation_time(mp_measurements, i_accepted));
+  //printf("%g\n", autocorrelation_time(mp_measurements, g_measurements));
   free(mp_measurements);
   
   free(left1);

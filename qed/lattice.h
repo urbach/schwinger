@@ -5,7 +5,7 @@
 /***** This unit defines lattice geometry  *****/
 /***********************************************/    
 
-#define X1 (12)                                       //Lattice size in direction 1
+#define X1 (32)                                       //Lattice size in direction 1
 #define X2 (X1)                                      //Lattice size in direction 2
 #define GRIDPOINTS (X1*X2)                           //Total number of lattice sites
 
