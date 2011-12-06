@@ -4,6 +4,7 @@
 #include <time.h>
 #include <getopt.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "statistics.h"
 #include "lattice.h"

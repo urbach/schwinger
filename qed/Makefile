@@ -15,6 +15,9 @@ hmc.o: hmc.c hmc.h lattice.h fields.h linalg.h complex/complex.h rand/ranlxd.h r
 lattice.o: lattice.c lattice.h
 	$(CC) -c $< -o $@
 
+statistics.o: statistics.c statistics.h
+	$(CC) -c $< -o $@
+
 linalg.o: linalg.c linalg.h lattice.h complex/complex.h Makefile
 	$(CC) -c $< -o $@
 
@@ -39,7 +42,7 @@ leapfrog.o: leapfrog.c leapfrog.h hmc.h Makefile
 leapfrog2.o: leapfrog2.c leapfrog2.h 2MN_integrator.h hmc.h Makefile
 	$(CC) -c $< -o $@
 
-qed.o: qed.c measurements.h fields.h lattice.h linalg.h hmc.h complex/complex.h Makefile rand/ranlxd.h
+qed.o: qed.c measurements.h fields.h lattice.h statistics.h linalg.h hmc.h complex/complex.h Makefile rand/ranlxd.h
 	$(CC) -c $< -o $@
 
 test1.o: test1.c measurements.h fields.h lattice.h linalg.h hmc.h complex/complex.h Makefile rand/ranlxd.h
@@ -48,8 +51,8 @@ test1.o: test1.c measurements.h fields.h lattice.h linalg.h hmc.h complex/comple
 test2.o: test2.c measurements.h fields.h lattice.h linalg.h hmc.h complex/complex.h Makefile rand/ranlxd.h
 	$(CC) -c $< -o $@
 
-qed: fields.o qed.o hmc.o lattice.o linalg.o measurements.o ranlxd.o gauss.o dirac.o leapfrog.o 2MN_integrator.o leapfrog2.o rec_lf_integrator.o Makefile
-	$(CC) qed.o fields.o hmc.o lattice.o linalg.o measurements.o ranlxd.o gauss.o dirac.o leapfrog.o 2MN_integrator.o leapfrog2.o rec_lf_integrator.o -o qed -lm
+qed: fields.o qed.o hmc.o lattice.o statistics.o linalg.o measurements.o ranlxd.o gauss.o dirac.o leapfrog.o 2MN_integrator.o leapfrog2.o rec_lf_integrator.o Makefile
+	$(CC) qed.o fields.o hmc.o lattice.o statistics.o linalg.o measurements.o ranlxd.o gauss.o dirac.o leapfrog.o 2MN_integrator.o leapfrog2.o rec_lf_integrator.o -o qed -lm
 
 test1: fields.o test1.o hmc.o lattice.o linalg.o measurements.o ranlxd.o gauss.o dirac.o leapfrog.o 2MN_integrator.o Makefile
 	$(CC) test1.o fields.o hmc.o lattice.o linalg.o measurements.o ranlxd.o gauss.o dirac.o leapfrog.o 2MN_integrator.o -o test1 -lm
