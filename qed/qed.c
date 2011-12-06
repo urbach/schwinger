@@ -257,8 +257,8 @@ int main(int argc, char **argv)
   printf("\t Acceptance rate:                      %2.2lf\n\n", (double)accepted/(double)total_updates);
   printf("\t Inner loop CG iterations per update:  %2.2lf\n", (double)total_cgiterations1/(double)total_updates);
   printf("\t Outer loop CG iterations per update:  %2.2lf\n", (double)total_cgiterations2/(double)total_updates);
-  printf("\t Inner loop CG iterations per solve:   %2.2lf\n", (double)total_cgiterations1/(double)total_updates/(n_steps[2]*n_steps[1]));
-  printf("\t Outer loop CG iterations per solve:   %2.2lf\n\n", (double)total_cgiterations2/(double)total_updates/(n_steps[2]));
+  printf("\t Inner loop CG iterations per solve:   %2.2lf\n", (double)total_cgiterations1/(double)total_updates/(n_steps[2]*n_steps[1] + 1));
+  printf("\t Outer loop CG iterations per solve:   %2.2lf\n\n", (double)total_cgiterations2/(double)total_updates/(n_steps[2] + 1));
   printf("\t Runtime / seconds:                    %2.2lf\n", (double)(clock() - clock_start)/(double)CLOCKS_PER_SEC);
   
   print_statistics_data(&gauge_force_statistics, "Gauge force per update:", tau);
