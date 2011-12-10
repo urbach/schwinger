@@ -84,3 +84,11 @@ double pion_correlation_function(int t)
   }
   return C;
 }
+
+double topological_charge()
+{
+  double tmp = 0;
+  for (int i = 0; i < GRIDPOINTS; i ++)
+    tmp += gauge1[i] + gauge2[right1[i]] - gauge1[right2[i]] - gauge2[i];
+  return 0.5 * tmp * M_1_PI;
+}
