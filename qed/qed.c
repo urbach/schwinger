@@ -15,12 +15,12 @@
 
 /* global variables */
 int g_thermalize = 500;      //Number of MC updates for thermalization
-int g_measurements = 500;  //Number of measurements (statistically independent configurations)
+int g_measurements = 1000;  //Number of measurements (statistically independent configurations)
 int g_intermediate = 0;    //Number of MC updates between the measurements
 /* extern in hmc.h      */
 double ham = 0, ham_old = 0;
 /* The critical mass at beta=1.0 is about 0.32 */
-double g_mass = -0.06;       //Fermion mass
+double g_mass = -0.23125;       //Fermion mass
 double g_musqr = 0.2;
 
 double beta = 1.0;       //Coupling constant for the gauge field
@@ -267,6 +267,7 @@ int main(int argc, char **argv)
   /* Measurement results */
   printf("\n\n Mean values:\n");
   print_statistics_data(&mp_statistics, "Plaquette:", 1);
+  printf("\t Plaquette autocorrelation time:       %g\n", autocorrelation_time(mp_measurements, g_measurements));
   print_statistics_data(&pl_statistics, "Polyakov loop:", 1);
   print_statistics_data(&cc_statistics, "Chiral Condensate:", 1);
   print_statistics_data(&dh_statistics, "-Delta H:", 1);
@@ -274,7 +275,6 @@ int main(int argc, char **argv)
   printf("\n");
   print_statistics_array(correlation_statistics, "Pion Correlation", X2, 1);
   
-  //printf("%g\n", autocorrelation_time(mp_measurements, g_measurements));
   free(mp_measurements);
   
   free(left1);
