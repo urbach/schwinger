@@ -10,3 +10,7 @@ DerivedData
 .git-version
 logs*
 dumps*
+plots*
+*.csv
+*.ods
+cmd*
