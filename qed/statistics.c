@@ -63,7 +63,7 @@ double autocorrelation_Gamma(double *measurements, double mean, int N, int n)
   for (int i = loopstart; i < loopend; i ++)
     result += (measurements[i] - mean) * (measurements[i + n] - mean);
   
-  return result / (loopstart - loopend);
+  return result / (loopend - loopstart);
 }
 
 double autocorrelation_time(double *measurements, int N)
@@ -73,14 +73,17 @@ double autocorrelation_time(double *measurements, int N)
     mean += measurements[i];
   mean /= N;
   
-  double Gamma0 = 0.5 * autocorrelation_Gamma(measurements, mean, N, 0);
-  double result = Gamma0;
+  double Gamma0 = autocorrelation_Gamma(measurements, mean, N, 0);
+  //printf("%f\n", Gamma0);
+  double result = 0.5 * Gamma0;
   
-  //printf("%g\n", Gamma0);
   for (int i = 1; i < N; i ++)
   {
-    result += autocorrelation_Gamma(measurements, mean, N, i);
-    //printf("%g\n", autocorrelation_Gamma(measurements, mean, N, i));
+    double curGamma = autocorrelation_Gamma(measurements, mean, N, i);
+    //printf("%f\n", curGamma / Gamma0);
+    if (curGamma < 0)
+      break;
+    result += curGamma;
   }
   
   return result / Gamma0;
