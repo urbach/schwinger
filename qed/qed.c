@@ -195,11 +195,15 @@ int main(int argc, char **argv)
   statistics_data cc_statistics; reset_statistics_data(&cc_statistics);
   statistics_data dh_statistics; reset_statistics_data(&dh_statistics);
   statistics_data expdh_statistics; reset_statistics_data(&expdh_statistics);
-  statistics_data correlation_statistics[X2];
+  statistics_data pion_correlation_statistics[X2];
+  statistics_data pcac_correlation_statistics[X2];
   
   double *mp_measurements = malloc(g_measurements * sizeof(double));
   for (int t = 0; t < X2; t ++)
-    reset_statistics_data(&correlation_statistics[t]);
+  {
+    reset_statistics_data(&pion_correlation_statistics[t]);
+    reset_statistics_data(&pcac_correlation_statistics[t]);
+  }
   for(i = 0; i < g_measurements; i ++)
   {
     g_cgiterations1 = 0;
@@ -227,7 +231,10 @@ int main(int argc, char **argv)
     }
     
     for (int t = 0; t < X2; t ++)
-      add_statistics_entry(&correlation_statistics[t], pion_correlation_function(t));
+    {
+      add_statistics_entry(&pion_correlation_statistics[t], pion_correlation_function(t));
+      add_statistics_entry(&pcac_correlation_statistics[t], pcac_correlation_function(t));
+    }
     
     add_statistics_entry(&mp_statistics, mp);
     add_statistics_entry(&pl_statistics, pl);
@@ -273,7 +280,9 @@ int main(int argc, char **argv)
   print_statistics_data(&dh_statistics, "-Delta H:", 1);
   print_statistics_data(&expdh_statistics, "exp(-Delta H):", 1);
   printf("\n");
-  print_statistics_array(correlation_statistics, "Pion Correlation", X2, 1);
+  print_statistics_array(pion_correlation_statistics, "Pion Correlation", X2, 1);
+  printf("\n");
+  print_statistics_array(pcac_correlation_statistics, "PCAC Correlation", X2, 1);
   
   free(mp_measurements);
   

@@ -79,13 +79,32 @@ double pion_correlation_function(int t)
   for (int x = 0; x < X1; x ++)
   {
     int index = idx(x, t, X1);
-    double a = cabs(R1[index].s1);
-    double b = cabs(R1[index].s2);
-    double c = cabs(R2[index].s1);
-    double d = cabs(R2[index].s2);
-    C += a * a + b * b + c * c + d * d;
+    complex double a = R1[index].s1;
+    complex double b = R1[index].s2;
+    complex double c = R2[index].s1;
+    complex double d = R2[index].s2;
+    C += fabs(a * cconj(a) + b * cconj(b) + c * cconj(c) + d * cconj(d));
   }
   return C;
+}
+
+double pcac_correlation_function(int t)
+{
+  complex double C = 0;
+  for (int x = 0; x < X1; x ++)
+  {
+    int index = idx(x, t, X1);
+    complex double a = R1[index].s1;
+    complex double b = R1[index].s2;
+    complex double c = R2[index].s1;
+    complex double d = R2[index].s2;
+    //C += I * (a * cconj(c) - c * cconj(a) + b * cconj(d) - d * cconj(b));
+    C += -cimag(a * cconj(c)) - cimag(b * cconj(d));
+  }
+  C *= 2;
+  if (fabs(cimag(C)) > 1e-6)
+    printf("\nImaginary part of PCAC correlation function detected!\n");
+  return fabs(C);
 }
 
 double topological_charge()

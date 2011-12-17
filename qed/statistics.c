@@ -41,7 +41,7 @@ void calculate_statistics_array(statistics_data *data, int array_size)
 void print_statistics_data(statistics_data *data, const char *name, double factor)
 {
   calculate_statistics_data(data);
-  printf("\t %-38s%2.6lf +/- %2.6lf (e = %02i%%)\n", name, data->mean * factor, data->error * factor, (int)(100.0*data->error/data->mean));
+  printf("\t %-38s%2.6lf +/- %2.6lf (e = %02i%%)\n", name, data->mean * factor, data->error * factor, (int)(fabs(100.0*data->error/data->mean)));
 }
 
 void print_statistics_array(statistics_data *data, const char *name, int array_size, double factor)

@@ -9,6 +9,7 @@ double mean_plaquette();
 double polyakov_loop();
 double chiral_condensate();
 double pion_correlation_function(int t);
+double pcac_correlation_function(int t);
 double topological_charge();
 
 #endif
