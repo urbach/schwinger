@@ -9,7 +9,8 @@
 #include "dirac.h"
 #include "measurements.h"
 #ifndef M_PI
-#define M_PI    3.14159265358979323846f
+#define M_PI 3.14159265358979323846
+#define M_PI_2 (0.5 * M_PI)
 #endif
 
 double mean_plaquette()
@@ -111,6 +112,9 @@ double topological_charge()
 {
   double tmp = 0;
   for (int i = 0; i < GRIDPOINTS; i ++)
-    tmp += gauge1[i] + gauge2[right1[i]] - gauge1[right2[i]] - gauge2[i];
-  return 0.5 * tmp / M_PI;
+  {
+    double val = gauge1[i] + gauge2[right1[i]] - gauge1[right2[i]] - gauge2[i];
+    tmp += val - floor((val + M_PI) / (2 * M_PI)) * (2 * M_PI);
+  }
+  return tmp / (2 * M_PI);
 }

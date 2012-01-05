@@ -193,12 +193,14 @@ int main(int argc, char **argv)
   statistics_data mp_statistics; reset_statistics_data(&mp_statistics);
   statistics_data pl_statistics; reset_statistics_data(&pl_statistics);
   statistics_data cc_statistics; reset_statistics_data(&cc_statistics);
+  statistics_data tc_statistics; reset_statistics_data(&tc_statistics);
   statistics_data dh_statistics; reset_statistics_data(&dh_statistics);
   statistics_data expdh_statistics; reset_statistics_data(&expdh_statistics);
   statistics_data pion_correlation_statistics[X2];
   statistics_data pcac_correlation_statistics[X2];
   
   double *mp_measurements = malloc(g_measurements * sizeof(double));
+  double *tc_measurements = malloc(g_measurements * sizeof(double));
   for (int t = 0; t < X2; t ++)
   {
     reset_statistics_data(&pion_correlation_statistics[t]);
@@ -221,6 +223,7 @@ int main(int argc, char **argv)
     double mp  = mean_plaquette();
     double pl  = polyakov_loop();
     double cc  = chiral_condensate();
+    double tc  = topological_charge();
     double dh  = ham_old - ham;
     
     if (accepted_cur >= 1)
@@ -239,15 +242,17 @@ int main(int argc, char **argv)
     add_statistics_entry(&mp_statistics, mp);
     add_statistics_entry(&pl_statistics, pl);
     add_statistics_entry(&cc_statistics, cc);
+    add_statistics_entry(&tc_statistics, tc);
     add_statistics_entry(&dh_statistics, dh);
     add_statistics_entry(&expdh_statistics, exp(dh));
     
     mp_measurements[i] = mp;
+    tc_measurements[i] = tc;
     
     total_cgiterations1 += g_cgiterations1;
     total_cgiterations2 += g_cgiterations2;
     
-    printf("\t Step %04i,\t mp = %2.4lf,\t pl = %2.4lf,\t cc = %2.4lf,\t dh = %2.4lf,\tcg1 = %d,\tcg2 = %d,\tacc = %d\n", i, mp, pl, cc, -dh, g_cgiterations1, g_cgiterations2, accepted_cur);
+    printf("\t Step %04i,\t mp = %2.4lf,\t pl = %2.4lf,\t cc = %2.4lf,\ttc = %lf,\t dh = %2.4lf,\tcg1 = %d,\tcg2 = %d,\tacc = %d\n", i, mp, pl, cc, tc, -dh, g_cgiterations1, g_cgiterations2, accepted_cur);
   }
   
   /* Some output for diagnostics */
@@ -277,6 +282,8 @@ int main(int argc, char **argv)
   printf("\t Plaquette autocorrelation time:       %g\n", autocorrelation_time(mp_measurements, g_measurements));
   print_statistics_data(&pl_statistics, "Polyakov loop:", 1);
   print_statistics_data(&cc_statistics, "Chiral Condensate:", 1);
+  print_statistics_data(&tc_statistics, "Topological Charge:", 1);
+  printf("\t Topological Charge autocorrelation time:       %g\n", autocorrelation_time(tc_measurements, g_measurements));
   print_statistics_data(&dh_statistics, "-Delta H:", 1);
   print_statistics_data(&expdh_statistics, "exp(-Delta H):", 1);
   printf("\n");
@@ -285,6 +292,7 @@ int main(int argc, char **argv)
   print_statistics_array(pcac_correlation_statistics, "PCAC Correlation", X2, 1);
   
   free(mp_measurements);
+  free(tc_measurements);
   
   free(left1);
   free(left2);

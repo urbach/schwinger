@@ -1,5 +1,5 @@
 <?php
-	function fitData($filename, $measurements, $errors)
+	function fitData($filename, $pion_measurements, $pion_errors, $pcac_measurements, $pcac_errors, $beta, $mass, $n_steps, $musqr)
 	{
 		$descriptorspec = array(
 							   0 => array("pipe", "r"),  // STDIN ist eine Pipe, von der das Child liest
@@ -12,17 +12,34 @@
 		$gnuplot_output = $pipes[1];
 		$gnuplot_err = $pipes[2];
 		
-		$nMeasurements = count($measurements);
-		$fitc = 0.5 * ($nMeasurements - 1);
+		$nMeasurements = count($pion_measurements);
+		$fitc = 0.5 * ($nMeasurements);// - 1);
 		$fitstart = 0.25 * $nMeasurements;
 		$fitend = 0.75 * $nMeasurements;
 		
 		for ($i = 0; $i < $nMeasurements; $i ++)
-			$data .= "$i\t$measurements[$i]\t$errors[$i]\n";
-		$data .= 'EOF';
+		{
+			$data_pion .= "$i\t$pion_measurements[$i]\t$pion_errors[$i]\n";
+			$data_pcac .= "$i\t$pcac_measurements[$i]\t$pcac_errors[$i]\n";
+			$data_pion_pcac .= "$i\t" . $pcac_measurements[$i] / (2 * $pion_measurements[$i]) . "\n";
+		}
+		$fermion_mass = 0;
+		for ($i = $fitstart; $i <= $fitend; $i ++)
+			$fermion_mass += $pcac_measurements[$i] / (2 * $pion_measurements[$i]);
+		//echo $fermion_mass / ($fitend - $fitstart + 1) . "\n";
+		$data_pion .= 'e';
+		$data_pcac .= 'e';
+		$data_pion_pcac .= 'e';
+		for ($i = 0; $i < $nMeasurements - 1; $i ++)
+		{
+			$m1 = $pion_measurements[$i + 1];
+			$m2 = $pion_measurements[$i];
+			$data_pion_relation .= "$i\t" . $m2 / $m1 . "\t" . sqrt(($pion_errors[$i] / $m1)^2 + ($pion_errors[$i + 1] * $m2 / ($m1^2))^2) . "\n";
+		}
+		$data_pion_relation .= 'e';
 		$commands = <<<END
 set font "HelveticaNeue"
-set title "Mean correlation function over time"
+set title "Mean correlation function over time, {/Symbol b} = $beta, m = $mass, n_{steps} = [$n_steps[0], $n_steps[1], $n_steps[2]], {/Symbol m}^2 = $musqr"
 set xlabel "t"
 set ylabel "C(t)"
 set xrange [0:$nMeasurements]
@@ -34,9 +51,12 @@ b=0.2
 c=$fitc
 f(x)=a*cosh(b*(x-c))
 fit [$fitstart:$fitend] f(x) '-' using 1:2 via a, b
-$data
-plot '-' using 1:2:3 with yerrorbars title "Measurements", f(x) title "Fit" with lines
-$data
+$data_pion
+plot '-' using 1:2:3 with yerrorbars title "C_{/Symbol p}(t)", f(x) title "Linear fit" with lines, '-' using 1:2:3 with yerrorbars title "C(t) / C(t + 1)", '-' using 1:2:3 with yerrorbars title "C_{PCAC}(t)", '-' using 1:2 title "C_{PCAC}(t) / (2 * C_{/Symbol p}(t))"
+$data_pion
+$data_pion_relation
+$data_pcac
+$data_pion_pcac
 END;
 		
 		fprintf($gnuplot_input, $commands);
@@ -122,8 +142,13 @@ END;
 		array_shift($matches);
 		list($pion_correlation, $pion_correlation_e) = $matches;
 		
+		preg_match_all('/PCAC Correlation\[(.+)\]:\s*(.+) \+\/- (.+) \(/', $results, $matches);
+		array_shift($matches);
+		array_shift($matches);
+		list($pcac_correlation, $pcac_correlation_e) = $matches;
+		
 		if (count($pion_correlation))
-			list($m_pion, $m_pion_e) = fitData(basename($logname), $pion_correlation, $pion_correlation_e);
+			list($m_pion, $m_pion_e) = fitData(basename($logname), $pion_correlation, $pion_correlation_e, $pcac_correlation, $pcac_correlation_e, $beta, $mass, $n_steps, $musqr);
 		
 		return array(basename($logname), $X1, $beta, $mass,
 					 $no_timescales, $n_steps[0], $n_steps[1], $n_steps[2], $musqr,
