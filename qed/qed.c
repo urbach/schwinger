@@ -252,7 +252,7 @@ int main(int argc, char **argv)
     total_cgiterations1 += g_cgiterations1;
     total_cgiterations2 += g_cgiterations2;
     
-    printf("\t Step %04i,\t mp = %2.4lf,\t pl = %2.4lf,\t cc = %2.4lf,\ttc = %lf,\t dh = %2.4lf,\tcg1 = %d,\tcg2 = %d,\tacc = %d\n", i, mp, pl, cc, tc, -dh, g_cgiterations1, g_cgiterations2, accepted_cur);
+    printf("\t Step %04i,\t mp = %2.4lf,\t pl = %2.4lf,\t cc = %2.4lf,\t tc = %lf,\t dh = %2.4lf,\t cg1 = %d,\t cg2 = %d,\t acc = %d\n", i, mp, pl, cc, tc, -dh, g_cgiterations1, g_cgiterations2, accepted_cur);
   }
   
   /* Some output for diagnostics */
