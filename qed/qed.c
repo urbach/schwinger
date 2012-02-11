@@ -20,8 +20,8 @@ int g_intermediate = 0;    //Number of MC updates between the measurements
 /* extern in hmc.h      */
 double ham = 0, ham_old = 0;
 /* The critical mass at beta=1.0 is about 0.32 */
-double g_mass = -0.23125;       //Fermion mass
-double g_musqr = 0.2;
+double g_mass = -0.06;//3125;//23125;       //Fermion mass
+double g_musqr = 0.7;
 
 double beta = 1.0;       //Coupling constant for the gauge field
 
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
   /* most inner steps per next outer step  */
   /* this is typically the gauge action    */
   if (!n_steps[0])
-    n_steps[0] = 8;
+    n_steps[0] = 12;
   
   /* The gauge action is always done on the most inner timescale */
   /* these are defined in 2MN_integrator.h                       */
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
       n_steps[1] = 1;
     up_momenta[2] = &update_momenta_PF2;
     if (!n_steps[2])
-      n_steps[2] = 10;
+      n_steps[2] = 6;
   }
   
   int i, l;
@@ -233,7 +233,7 @@ int main(int argc, char **argv)
       add_statistics_entry(&PF2_force_statistics, PF2_force);
     }
     
-
+    
     double C_X2_2 = 0;
     for (int t = 0; t < X2; t ++)
     {
