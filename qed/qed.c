@@ -233,8 +233,9 @@ int main(int argc, char **argv)
       add_statistics_entry(&PF2_force_statistics, PF2_force);
     }
     
-    
     double C_X2_2 = 0;
+    double C_X2_3_8 = 0;
+    double C_X2_5_8 = 0;
     for (int t = 0; t < X2; t ++)
     {
       double pion_correlation = pion_correlation_function(t);
@@ -242,6 +243,10 @@ int main(int argc, char **argv)
       add_statistics_entry(&pcac_correlation_statistics[t], pcac_correlation_function(t));
       if (t == X2 / 2)
         C_X2_2 = pion_correlation;
+      if (t == (X2 * 3) / 8)
+        C_X2_3_8 = pion_correlation;
+      if (t == (X2 * 5) / 8)
+        C_X2_5_8 = pion_correlation;
     }
     
     add_statistics_entry(&mp_statistics, mp);
@@ -257,7 +262,7 @@ int main(int argc, char **argv)
     total_cgiterations1 += g_cgiterations1;
     total_cgiterations2 += g_cgiterations2;
     
-    printf("\t Step %04i,\t mp = %2.8lf,\t pl = %2.4lf,\t cc = %2.4lf,\t tc = %2.1lf,\t C(%i) = %2.10lf,\t dh = %2.8lf,\t cg1 = %d,\t cg2 = %d,\t acc = %d\n", i, mp, pl, cc, tc, X2 / 2, C_X2_2, -dh, g_cgiterations1, g_cgiterations2, accepted_cur);
+    printf("\t Step %04i,\t mp = %2.8lf,\t pl = %2.4lf,\t cc = %2.4lf,\t tc = %2.1lf,\t C(%i) = %2.10lf,\t C(%i) = %2.10lf,\t C(%i) = %2.10lf,\t dh = %2.8lf,\t cg1 = %d,\t cg2 = %d,\t acc = %d\n", i, mp, pl, cc, tc, (X2 * 3) / 8, C_X2_3_8, X2 / 2, C_X2_2, (X2 * 5) / 8, C_X2_5_8, -dh, g_cgiterations1, g_cgiterations2, accepted_cur);
   }
   
   /* Some output for diagnostics */
