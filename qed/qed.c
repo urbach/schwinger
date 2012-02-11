@@ -233,10 +233,15 @@ int main(int argc, char **argv)
       add_statistics_entry(&PF2_force_statistics, PF2_force);
     }
     
+
+    double C_X2_2 = 0;
     for (int t = 0; t < X2; t ++)
     {
-      add_statistics_entry(&pion_correlation_statistics[t], pion_correlation_function(t));
+      double pion_correlation = pion_correlation_function(t);
+      add_statistics_entry(&pion_correlation_statistics[t], pion_correlation);
       add_statistics_entry(&pcac_correlation_statistics[t], pcac_correlation_function(t));
+      if (t == X2 / 2)
+        C_X2_2 = pion_correlation;
     }
     
     add_statistics_entry(&mp_statistics, mp);
@@ -252,7 +257,7 @@ int main(int argc, char **argv)
     total_cgiterations1 += g_cgiterations1;
     total_cgiterations2 += g_cgiterations2;
     
-    printf("\t Step %04i,\t mp = %2.4lf,\t pl = %2.4lf,\t cc = %2.4lf,\t tc = %lf,\t dh = %2.4lf,\t cg1 = %d,\t cg2 = %d,\t acc = %d\n", i, mp, pl, cc, tc, -dh, g_cgiterations1, g_cgiterations2, accepted_cur);
+    printf("\t Step %04i,\t mp = %2.8lf,\t pl = %2.4lf,\t cc = %2.4lf,\t tc = %2.1lf,\t C(%i) = %2.10lf,\t dh = %2.8lf,\t cg1 = %d,\t cg2 = %d,\t acc = %d\n", i, mp, pl, cc, tc, X2 / 2, C_X2_2, -dh, g_cgiterations1, g_cgiterations2, accepted_cur);
   }
   
   /* Some output for diagnostics */
@@ -265,6 +270,7 @@ int main(int argc, char **argv)
   printf("\t Acceptance rate:                      %2.2lf\n\n", (double)accepted/(double)total_updates);
   printf("\t Inner loop CG iterations per update:  %2.2lf\n", (double)total_cgiterations1/(double)total_updates);
   printf("\t Outer loop CG iterations per update:  %2.2lf\n", (double)total_cgiterations2/(double)total_updates);
+  // FIXME this is wrong for 1 and 2 scales!
   printf("\t Inner loop CG iterations per solve:   %2.2lf\n", (double)total_cgiterations1/(double)total_updates/(n_steps[2]*n_steps[1] + 1));
   printf("\t Outer loop CG iterations per solve:   %2.2lf\n\n", (double)total_cgiterations2/(double)total_updates/(n_steps[2] + 1));
   printf("\t Runtime / seconds:                    %2.2lf\n", (double)(clock() - clock_start)/(double)CLOCKS_PER_SEC);
