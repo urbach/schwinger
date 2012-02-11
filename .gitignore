@@ -14,3 +14,5 @@ plots*
 *.csv
 *.ods
 cmd*
+*.log
+filelist.txt
