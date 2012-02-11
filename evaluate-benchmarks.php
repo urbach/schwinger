@@ -72,6 +72,9 @@ $data_pcac
 $data_pion_pcac
 END;
 		
+		if ($save_plot)
+			file_put_contents("plots/correlation-$filename.plt", $correlation_commands);
+		
 		$process = proc_open('gnuplot', $descriptorspec, $pipes, NULL, NULL);
 		$gnuplot_input = $pipes[0];
 		$gnuplot_output = $pipes[1];
@@ -146,7 +149,7 @@ END;
 		return $result / $Gamma0;
 	}
 
-	function extractDataFromLog($logname, $history_plots)
+	function extractDataFromLog($logname, $history_plots, $correlation_plots)
 	{
 		$logtext = file_get_contents($logname);
 		
@@ -268,10 +271,56 @@ set font "HelveticaNeue"
 set title "History plot of $plot_parameter\\n{/Symbol b} = $beta, m = $mass, n_{steps} = [$n_steps[0], $n_steps[1], $n_steps[2]], {/Symbol m}^2 = $musqr, L = $X1"
 set xlabel "{/Symbol t}"
 set ylabel "$plot_parameter"
-set xrange [0:$nMeasurements]
+set xrange [0:$data_count/20]
 set terminal postscript enhanced "HelveticaNeue" color eps
 set output "plots/history-$plot_parameter-$filename.eps"
 plot '-' using 1:2 with lines title 'Measurements'
+$data
+END;
+			
+			$descriptorspec = array(
+								   0 => array("pipe", "r"),  // STDIN ist eine Pipe, von der das Child liest
+								   1 => array("pipe", "w"),  // STDOUT ist eine Pipe, in die das Child schreibt
+								   2 => array("pipe", "w"),  // STDERR ist eine Pipe, in die das Child schreibt
+			);
+		
+			$process = proc_open('gnuplot', $descriptorspec, $pipes, NULL, NULL);
+			$gnuplot_input = $pipes[0];
+			$gnuplot_output = $pipes[1];
+			$gnuplot_err = $pipes[2];
+			fprintf($gnuplot_input, $commands);
+			fclose($gnuplot_input);
+			fclose($gnuplot_err);
+			fclose($gnuplot_output);
+		}
+		
+		// plot correlation for history variables
+		foreach ($correlation_plots as $plot_parameters)
+		{
+			$parameter1 = $plot_parameters[0];
+			$parameter2 = $plot_parameters[1];
+			preg_match_all('/Step.*' . preg_quote($parameter1) . ' = ([^,]+),/', $logtext, $matches1);
+			preg_match_all('/Step.*' . preg_quote($parameter2) . ' = ([^,]+),/', $logtext, $matches2);
+			
+			$data_array1 = $matches1[1];
+			$data_array2 = $matches2[1];
+			$data_count = min(count($data_array1), count($data_array2));
+			
+			//echo autocorrelation_time($data_array) . "\n\n";
+			
+			$data = '';
+			for ($i = 0; $i < $data_count; $i ++)
+				$data .= $data_array1[$i] . "\t" . $data_array2[$i] . "\n";
+			$data .= 'e';
+			
+			$commands = <<<END
+set font "HelveticaNeue"
+set title "$parameter2 vs. $parameter1\\n{/Symbol b} = $beta, m = $mass, n_{steps} = [$n_steps[0], $n_steps[1], $n_steps[2]], {/Symbol m}^2 = $musqr, L = $X1"
+set xlabel "$parameter1"
+set ylabel "$parameter2"
+set terminal postscript enhanced "HelveticaNeue" color eps
+set output "plots/scatter-$parameter1-$parameter2-$filename.eps"
+plot '-' using 1:2 with points title 'Measurements'
 $data
 END;
 			
@@ -304,14 +353,26 @@ END;
 	
 	array_shift($argv);
 	
+	$save_plot = false;
 	$history_plots = array();
+	$correlation_plots = array();
 	while (true)
 	{
 		$cmd = $argv[0];
-		if ($cmd == '--history_plot')
+		if ($cmd == '--history-plot')
 		{
 			array_shift($argv);
 			array_push($history_plots, array_shift($argv));
+		}
+		else if ($cmd == '--scatter-plot')
+		{
+			array_shift($argv);
+			array_push($correlation_plots, array(array_shift($argv), array_shift($argv)));
+		}
+		else if ($cmd == '--save-plot')
+		{
+			array_shift($argv);
+			$save_plot = true;
 		}
 		else
 			break;
@@ -334,5 +395,5 @@ END;
 	
 	foreach ($lognames as $logname)
 		if (strlen($logname) && substr($logname, 0, 1) != "#")
-			echo implode("\t", extractDataFromLog($logname, $history_plots)) . "\n";
+			echo implode("\t", extractDataFromLog($logname, $history_plots, $correlation_plots)) . "\n";
 ?>
