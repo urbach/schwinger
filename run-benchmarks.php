@@ -25,10 +25,19 @@
 	
 	$parameters = array(
 			'beta' => array(
-					'1.0 --mass -0.23125',
-					/*'1.0 --mass -0.22750',
-					'1.0 --mass -0.00600',
-					'1.0 --mass -0.05750',
+					'1.0 --mass -0.31000',
+					//'1.0 --mass -0.30000',
+					//'1.0 --mass -0.29500',
+					//'1.0 --mass -0.29000',
+					//'1.0 --mass -0.28000',
+					//'1.0 --mass -0.25000',
+					//'1.0 --mass -0.24500',
+					//'1.0 --mass -0.24000',
+					//'1.0 --mass -0.23500',
+					//'1.0 --mass -0.23125',
+					//'1.0 --mass -0.22750',
+					//'1.0 --mass -0.06000',
+					/*'1.0 --mass -0.05750',
 					'1.0 --mass -0.05500',
 					'1.0 --mass 0.53750',
 					'1.0 --mass 0.55000',
@@ -69,10 +78,10 @@
 					'6.0 --mass 0.26250',
 					'6.0 --mass 0.26500',*/
 				),
-			//'musqr' => array(0.1, 0.21, 0.4, 0.8),//array(0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.6, 0.8, '1.0'),
-			//'n_steps_2' => array(2, 3, 4, 8, 16),//array(2, 4, 8, 12, 16),
-			//'n_steps_1' => array(1, 2, 4),//array(1, 2, 4, 8),
-			//'n_steps_0' => array(8),//array(1, 2, 4, 8),
+			'n_steps_2' => array(6),//array(2, 4, 8, 12, 16),
+			'n_steps_1' => array(5),//array(1, 2, 4, 8),
+			//'no_timescales' => array(2),
+			//'musqr' => array(0.08, 0.5),//array(0.1, 0.21, 0.4, 0.8),//array(0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.6, 0.8, '1.0'),
 		);
 	
 	$argumentsList = array();
@@ -85,5 +94,8 @@
 	array_shift($argv);
 	$defaultCommandLine = implode($argv, ' ');
 	foreach ($argumentsList as $curArguments)
-		callExecutableWithArguments('qed', $curArguments . ' ' . $defaultCommandLine);
+	{
+		$args = (strlen($defaultCommandLine) ? $curArguments . ' ' . $defaultCommandLine : $curArguments);
+		callExecutableWithArguments('qed', $args);
+	}
 ?>
