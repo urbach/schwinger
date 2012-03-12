@@ -14,6 +14,8 @@
 
 	function fitData($filename, $pion_measurements, $pion_errors, $pcac_measurements, $pcac_errors, $beta, $mass, $n_steps, $musqr, $lattice_size)
 	{
+		global $save_plot;
+		
 		$descriptorspec = array(
 							   0 => array("pipe", "r"),  // STDIN ist eine Pipe, von der das Child liest
 							   1 => array("pipe", "w"),  // STDOUT ist eine Pipe, in die das Child schreibt
@@ -66,7 +68,8 @@ c=$fitc
 f(x)=0.5*a*(exp(-b*x)+exp(-b*(2*c-x)))
 fit [$fitstart:$fitend] f(x) '-' using 1:2 via a, b
 $data_pion
-plot '-' using 1:2:3 with yerrorbars title "C_{/Symbol p}(t)", f(x) title "Fit" with lines, '-' using 1:2:3 with yerrorbars title "C_{PCAC}(t)", '-' using 1:2 title "C_{PCAC}(t) / (2 * C_{/Symbol p}(t))"
+plot '-' using 1:2:3 with yerrorbars title "C_{/Symbol p}(t)" lc 1, f(x) title "Fit" with lines lc 1
+#, '-' using 1:2:3 with yerrorbars title "C_{PCAC}(t)", '-' using 1:2 title "C_{PCAC}(t) / (2 * C_{/Symbol p}(t))"
 $data_pion
 $data_pcac
 $data_pion_pcac
@@ -148,9 +151,27 @@ END;
 		
 		return $result / $Gamma0;
 	}
+	
+	function braced_error($value, $error)
+	{
+		if ($value === '')
+			return '--';
+		if (abs($value) < 1e-14)
+			$value = 0;
+		if (abs($error) < 1e-14)
+			$error = 0;
+		if ($error == 0)
+			return sprintf('%g', $value) . '(0)';
+		$error_order = -floor(log10($error));
+		if ($error_order < 0)
+			return round($value) . '(' . ceil($error) . ')';
+		return sprintf('%0.' . $error_order . 'f', $value) . '(' . ceil($error * pow(10, $error_order)) . ')';
+	}
 
 	function extractDataFromLog($logname, $history_plots, $correlation_plots)
 	{
+		global $save_plot;
+		
 		$logtext = file_get_contents($logname);
 		
 		$parts = explode(' Generation: ', $logtext);
@@ -226,6 +247,7 @@ END;
 		array_shift($matches);
 		list($expdh, $expdh_e) = $matches;
 		
+		//\(TC = -15\)
 		preg_match_all('/Pion Correlation\[(.+)\]:\s*(.+) \+\/- (.+) \(/', $results, $matches);
 		array_shift($matches);
 		array_shift($matches);
@@ -278,6 +300,9 @@ plot '-' using 1:2 with lines title 'Measurements'
 $data
 END;
 			
+			if ($save_plot)
+				file_put_contents("plots/history-$plot_parameter-$filename.plt", $commands);
+			
 			$descriptorspec = array(
 								   0 => array("pipe", "r"),  // STDIN ist eine Pipe, von der das Child liest
 								   1 => array("pipe", "w"),  // STDOUT ist eine Pipe, in die das Child schreibt
@@ -313,6 +338,61 @@ END;
 				$data .= $data_array1[$i] . "\t" . $data_array2[$i] . "\n";
 			$data .= 'e';
 			
+			$assoc_data = array();
+			$assoc_count = array();
+			$mean_1 = 0;
+			$mean_2 = 0;
+			$total = 0;
+			for ($i = 0; $i < $data_count; $i ++)
+			{
+				$key = $data_array1[$i];
+				if ($key == 0)
+					$key = 0;
+				$value = $data_array2[$i];
+				$assoc_data[$key] += $value;
+				$assoc_count[$key] += 1;
+				
+				$mean_1 += $key;
+				$mean_2 += $value;
+				$mean_1_2 += $key * $value;
+				$total += 1;
+			}
+			$mean_1 /= $total;
+			$mean_2 /= $total;
+			
+			$mean_squared_1 = 0;
+			$mean_squared_2 = 0;
+			$mean_1_2 = 0;
+			for ($i = 0; $i < $data_count; $i ++)
+			{
+				$key = $data_array1[$i];
+				$value = $data_array2[$i];
+				
+				// shift these values by their mean value
+				$key = abs($key);
+				$key -= $mean_1;
+				$value -= $mean_2;
+				$mean_squared_1 += $key * $key;
+				$mean_squared_2 += $value * $value;
+				$mean_1_2 += $key * $value;
+			}
+			$mean_squared_1 /= $total;
+			$mean_squared_2 /= $total;
+			$mean_1_2 /= $total;
+			$correlation_1_2 = $mean_1_2 / sqrt($mean_squared_1 * $mean_squared_2);
+			echo $correlation_1_2 . "\n";
+			$assoc_keys_sorted = array_keys($assoc_data);
+			sort($assoc_keys_sorted);
+			
+			$assoc_string = '';
+			foreach ($assoc_keys_sorted as $index => $key)
+			{
+				$value = $assoc_data[$key];
+				$count = $assoc_count[$key];
+				$assoc_string .= $key . "\t" . $count . "\t" . $value . "\t" . $value / $count . "\n";
+			}
+			$assoc_string .= 'e';
+			
 			$commands = <<<END
 set font "HelveticaNeue"
 set title "$parameter2 vs. $parameter1\\n{/Symbol b} = $beta, m = $mass, n_{steps} = [$n_steps[0], $n_steps[1], $n_steps[2]], {/Symbol m}^2 = $musqr, L = $X1"
@@ -320,8 +400,24 @@ set xlabel "$parameter1"
 set ylabel "$parameter2"
 set terminal postscript enhanced "HelveticaNeue" color eps
 set output "plots/scatter-$parameter1-$parameter2-$filename.eps"
+set terminal png size 800,600
+set output "plots/scatter-$parameter1-$parameter2-$filename.png"
 plot '-' using 1:2 with points title 'Measurements'
 $data
+set output "plots/scatter-$parameter1-$parameter2-$filename-mean.png"
+#set y2range [0:50000]
+#set y2tics 1000
+set y2label "Count"
+set ytics nomirror
+set y2tics
+c=5000
+a=1
+f(x)=c*exp(-a*x**2)
+fit f(x) '-' using 1:2 via a, c
+$assoc_string
+plot '-' using 1:4 with points title 'Mean values', '-' using 1:2 with points title 'Total count' axes x1y2, f(x) with lines title 'Total count fit' axes x1y2
+$assoc_string
+$assoc_string
 END;
 			
 			$descriptorspec = array(
@@ -344,14 +440,26 @@ END;
 					 $no_timescales, $n_steps[0], $n_steps[1], $n_steps[2], $musqr,
 					 
 					 $acceptance_rate, $runtime,
-					 $cg_inner_update, $cg_outer_update,
+					 $cg_inner_solve, $cg_outer_solve,
 					 $force_inner_application, $force_outer_application,
 					 
-					 $plaquette, $plaquette_autocorrelation_time, $tc, $tc_autocorrelation_time, //$pl, $cc,
-					 $m_pion, $m_pion_e);
+					 braced_error($plaquette, $plaquette_e * $plaquette_autocorrelation_time * 2), $plaquette_autocorrelation_time, braced_error($tc, $tc_e * $tc_autocorrelation_time * 2), $tc_autocorrelation_time, //$pl, $cc,
+					 braced_error($m_pion, $m_pion_e));
 	}
 	
 	array_shift($argv);
+	
+	/*echo braced_error(1e-14, 0) . "\n";
+	echo braced_error(1, 0) . "\n";
+	echo braced_error(0, 1) . "\n";
+	echo braced_error(1, 1) . "\n";
+	echo braced_error(2, 0) . "\n";
+	echo braced_error(0, 2) . "\n";
+	echo braced_error(200, 1) . "\n";
+	echo braced_error(200, 10) . "\n";
+	echo braced_error(2, 0.1) . "\n";
+	echo braced_error(2, 0.2) . "\n";
+	return;*/
 	
 	$save_plot = false;
 	$history_plots = array();
@@ -391,7 +499,7 @@ END;
 							 'force_inner', 'force_outer',
 
 							 'plaquette', 'plaquette_time', 'tc', 'tc_time',
-							 'm_pion', 'm_pion_e')) . "\n";
+							 'm_pion')) . "\n";
 	
 	foreach ($lognames as $logname)
 		if (strlen($logname) && substr($logname, 0, 1) != "#")
