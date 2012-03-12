@@ -197,12 +197,18 @@ int main(int argc, char **argv)
   statistics_data dh_statistics; reset_statistics_data(&dh_statistics);
   statistics_data expdh_statistics; reset_statistics_data(&expdh_statistics);
   statistics_data pion_correlation_statistics[X2];
+  const int tc_min = -15;
+  const int tc_max = 15;
+  const int tc_count = tc_max - tc_min + 1;
+  statistics_data pion_correlation_statistics_by_tc[tc_count + 1][X2];
   statistics_data pcac_correlation_statistics[X2];
   
   double *mp_measurements = malloc(g_measurements * sizeof(double));
   double *tc_measurements = malloc(g_measurements * sizeof(double));
   for (int t = 0; t < X2; t ++)
   {
+    for (int tc = 0; tc < tc_count; tc ++)
+      reset_statistics_data(&pion_correlation_statistics_by_tc[tc][t]);
     reset_statistics_data(&pion_correlation_statistics[t]);
     reset_statistics_data(&pcac_correlation_statistics[t]);
   }
@@ -236,10 +242,16 @@ int main(int argc, char **argv)
     double C_X2_2 = 0;
     double C_X2_3_8 = 0;
     double C_X2_5_8 = 0;
+    int tc_index = lround(tc);
     for (int t = 0; t < X2; t ++)
     {
       double pion_correlation = pion_correlation_function(t);
       add_statistics_entry(&pion_correlation_statistics[t], pion_correlation);
+
+      if (tc_index >= tc_min
+          && tc_index <= tc_max)
+        add_statistics_entry(&pion_correlation_statistics_by_tc[tc_index - tc_min][t], pion_correlation);
+
       add_statistics_entry(&pcac_correlation_statistics[t], pcac_correlation_function(t));
       if (t == X2 / 2)
         C_X2_2 = pion_correlation;
@@ -299,6 +311,14 @@ int main(int argc, char **argv)
   print_statistics_data(&expdh_statistics, "exp(-Delta H):", 1);
   printf("\n");
   print_statistics_array(pion_correlation_statistics, "Pion Correlation", X2, 1);
+  printf("\n\n");
+  for (int tc = 0; tc < tc_count; tc ++)
+  {
+    char dump_correlationname[1000];
+    sprintf(dump_correlationname, "Pion Correlation (TC = %i)", tc + tc_min);
+    print_statistics_array(pion_correlation_statistics_by_tc[tc], dump_correlationname, X2, 1);
+    printf("\n");
+  }
   printf("\n");
   print_statistics_array(pcac_correlation_statistics, "PCAC Correlation", X2, 1);
   
