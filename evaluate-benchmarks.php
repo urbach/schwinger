@@ -339,6 +339,7 @@ END;
 			$data .= 'e';
 			
 			$assoc_data = array();
+			$assoc_data_squared = array();
 			$assoc_count = array();
 			$mean_1 = 0;
 			$mean_2 = 0;
@@ -350,6 +351,7 @@ END;
 					$key = 0;
 				$value = $data_array2[$i];
 				$assoc_data[$key] += $value;
+				$assoc_data_squared[$key] += $value * $value;
 				$assoc_count[$key] += 1;
 				
 				$mean_1 += $key;
@@ -389,7 +391,7 @@ END;
 			{
 				$value = $assoc_data[$key];
 				$count = $assoc_count[$key];
-				$assoc_string .= $key . "\t" . $count . "\t" . $value . "\t" . $value / $count . "\n";
+				$assoc_string .= $key . "\t" . $count . "\t" . $value . "\t" . $value / $count . "\t" . $assoc_data_squared[$key] / $count . "\n";
 			}
 			$assoc_string .= 'e';
 			
@@ -415,7 +417,7 @@ a=1
 f(x)=c*exp(-a*x**2)
 fit f(x) '-' using 1:2 via a, c
 $assoc_string
-plot '-' using 1:4 with points title 'Mean values', '-' using 1:2 with points title 'Total count' axes x1y2, f(x) with lines title 'Total count fit' axes x1y2
+plot '-' using 1:4:(sqrt((\$5-\$4*\$4)/(\$2-1))) with yerrorbars title 'Mean values', '-' using 1:2 with points title 'Total count' axes x1y2, f(x) with lines title 'Total count fit' axes x1y2
 $assoc_string
 $assoc_string
 END;
@@ -434,6 +436,9 @@ END;
 			fclose($gnuplot_input);
 			fclose($gnuplot_err);
 			fclose($gnuplot_output);
+			
+			if ($save_plot)
+				file_put_contents("plots/scatter-$parameter1-$parameter2-$filename.plt", $commands);
 		}
 		
 		return array(basename($logname), $X1, $beta, $mass,

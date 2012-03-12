@@ -101,6 +101,8 @@ double pcac_correlation_function(int t)
     complex double d = R2[index].s2;
     //C += I * (a * cconj(c) - c * cconj(a) + b * cconj(d) - d * cconj(b));
     C += -cimag(a * cconj(c)) - cimag(b * cconj(d));
+    //C += -cimag(c);
+    //C += -cimag(a * cconj(b)) - cimag(c * cconj(d));
   }
   C *= 2;
   if (fabs(cimag(C)) > 1e-6)
@@ -114,7 +116,12 @@ double topological_charge()
   for (int i = 0; i < GRIDPOINTS; i ++)
   {
     double val = gauge1[i] + gauge2[right1[i]] - gauge1[right2[i]] - gauge2[i];
-    tmp += val - floor((val + M_PI) / (2 * M_PI)) * (2 * M_PI);
+    double offset = floor((val + M_PI) / (2 * M_PI)) * (2 * M_PI);
+    /*complex double link = link1[i] * link2[right1[i]] * cconj(link1[right2[i]]) * cconj(link2[i]);
+    printf("%f, %f, %f\n", val, val - offset, cimag(clog(link)));*/
+    /*if (offset)
+      printf("%f\n", offset);*/
+    tmp += val - offset;
   }
   return tmp / (2 * M_PI);
 }
