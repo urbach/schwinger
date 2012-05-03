@@ -39,6 +39,8 @@
 void gam5D_wilson(spinor *out, spinor *in) {
   int i;
   double factor = (2*g_R + g_mass);
+
+#pragma omp parallel for 
   for(i=0; i<GRIDPOINTS; i++) {
     complex double link1_i = link1[i];
     spinor in_i = in[i];

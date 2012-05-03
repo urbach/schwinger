@@ -5,6 +5,7 @@
 #include <getopt.h>
 #include <string.h>
 #include <unistd.h>
+#include <omp.h>
 
 #include "statistics.h"
 #include "lattice.h"
@@ -26,6 +27,8 @@ double g_musqr = 0.7;
 double beta = 1.0;       //Coupling constant for the gauge field
 
 double thermalize_min_acc = 0.7; // minimum ratio of accepted thermalization steps
+
+int g_omp_nthreads = 1;
 
 void echo_sim_params();
 void save_gauge(const char *filename);
@@ -62,6 +65,7 @@ int main(int argc, char **argv)
     {"tau", required_argument, NULL, 0},
     {"thermalize_min_acc", required_argument, NULL, 0},
     {"no_timescales", required_argument, NULL, 0},
+    {"omp_nthreads", required_argument, NULL, 0},
     {0, 0, 0, 0}
   };
   
@@ -80,6 +84,7 @@ int main(int argc, char **argv)
     
     const char *optionName = long_options[option_index].name;
     double optionDoubleValue = strtod(optarg, NULL);
+    int optionIntValue = atoi( optarg );
     printf("%s = %f\n", optionName, optionDoubleValue);
     
     if (strcmp(optionName, "thermalize") == 0)
@@ -106,6 +111,8 @@ int main(int argc, char **argv)
       thermalize_min_acc = optionDoubleValue;
     else if (strcmp(optionName, "no_timescales") == 0)
       no_timescales = optionDoubleValue;
+    else if (strcmp(optionName, "omp_nthreads") == 0)
+      g_omp_nthreads = optionIntValue;
   }
   
   // setup integration parameters
@@ -148,6 +155,11 @@ int main(int argc, char **argv)
   coldstart();
   /* Print out the run parameters */
   echo_sim_params(); 
+
+
+#ifdef OMP
+  omp_set_num_threads(g_omp_nthreads);
+#endif
   
   /* thermalization */
   printf("\n Thermalization: \n\n");
@@ -349,7 +361,8 @@ void echo_sim_params()
 void save_gauge(const char *filename)
 {
   FILE *file;
-  
+
+  fprintf(  stderr , "printing to file \"%s\" \n" , filename );
   file = fopen(filename, "w");
   fprintf(file, "%.16lg\n\n", s_g_old);
   for (int i = 0; i < GRIDPOINTS; i ++)
