@@ -10,6 +10,9 @@ void add(spinor *Q, spinor *R, spinor *S)
   int ix;
   spinor *q,*r,*s;
   
+#ifdef OMP
+#pragma omp parallel for private(q,r,s)
+#endif
   for (ix=0;ix<GRIDPOINTS;ix++)
   {
     q = (spinor *) Q + ix;
@@ -43,6 +46,9 @@ void assign(spinor *R, spinor *S)
   int ix;
   spinor *r,*s;
   
+#ifdef OMP
+#pragma omp parallel for private(r,s)
+#endif
   for (ix=0;ix<GRIDPOINTS;ix++){
     r=(spinor *) R + ix;
     s=(spinor *) S + ix;
@@ -59,6 +65,9 @@ void assign_add_mul(spinor *P, spinor *Q, complex double c)
   spinor *r,*s;
 
   
+#ifdef OMP
+#pragma omp parallel for private(r,s)
+#endif
   for (ix=0;ix<GRIDPOINTS;ix++){
     r=(spinor *) P + ix;
     s=(spinor *) Q + ix;
@@ -74,7 +83,9 @@ void assign_add_mul_r(spinor *P, spinor *Q, double c)
   static double fact;
 
   fact=c;
-   
+#ifdef OMP
+#pragma omp parallel for
+#endif
   for (ix=0;ix<GRIDPOINTS;ix++){
 
     P[ix].s1+=fact*Q[ix].s1;
@@ -86,6 +97,9 @@ void assign_diff_mul(spinor *R, spinor *S, complex double c){
   int ix;
   spinor *r, *s;
 
+#ifdef OMP
+#pragma omp parallel for private(r,s)
+#endif
   for (ix=0;ix<GRIDPOINTS;ix++)
   {
     s = (spinor *) S + ix;
@@ -104,6 +118,9 @@ void assign_mul_add_r(spinor *R, spinor *S, double c)
   
   fact=c;
   
+#ifdef OMP
+#pragma omp parallel for private(r,s)
+#endif
   for (ix=0;ix<GRIDPOINTS;ix++){
     r=(spinor *) R + ix;
     s=(spinor *) S + ix;
@@ -118,6 +135,9 @@ void diff(spinor *Q, spinor *R, spinor *S)
   int ix;
   spinor *q,*r,*s;
   
+#ifdef OMP
+#pragma omp parallel for private(q,r,s)
+#endif
   for (ix=0;ix<GRIDPOINTS;ix++){
     q=(spinor *) Q + ix;
     r=(spinor *) R + ix;
@@ -133,6 +153,9 @@ void mul_r(spinor *R, double c, spinor *S)
   int ix;
   spinor *r,*s;
 
+#ifdef OMP
+#pragma omp parallel for private(r,s)
+#endif
   for (ix=0;ix<GRIDPOINTS;ix++){
     r=(spinor *) R + ix;
     s=(spinor *) S + ix;
@@ -147,6 +170,9 @@ void mul_c(spinor *R, complex double c, spinor *S)
   int ix;
   spinor *r,*s;
 
+#ifdef OMP
+#pragma omp parallel for private(r,s)
+#endif
   for (ix=0;ix<GRIDPOINTS;ix++){
     r=(spinor *) R + ix;
     s=(spinor *) S + ix;
@@ -166,6 +192,9 @@ complex double scalar_prod(spinor *S, spinor *R)
 
   ds=0.0 + I*0.0;
   
+#ifdef OMP
+#pragma omp parallel for private(r,s)
+#endif
   for (ix=0;ix<GRIDPOINTS;ix++){
     s=(spinor *) S + ix;
     r=(spinor *) R + ix;

@@ -92,10 +92,15 @@ void update_momenta_fermion(const double dtau) {
   double f1=0., f2=0., sqsum = 0.;
   g_cgiterations1 += cg(g_X, g_fermion, ITER_MAX, DELTACG, &gam5D_SQR_wilson);
   gam5D_wilson(g_gam5DX, g_X);
+#ifdef OMP
+#pragma omp parallel for private(f1,f2)
+#endif
   for(i = 0; i < GRIDPOINTS; i++) {
     f1 = trX_dQ_wilson_dalpha1_X(i);
     f2 = trX_dQ_wilson_dalpha2_X(i);
+#ifdef _DEBUG_
     sqsum = f1*f1 + f2*f2;
+#endif
     gp1[i] = gp1[i] - dtau*(- f1);
     gp2[i] = gp2[i] - dtau*(- f2);
   }
@@ -112,10 +117,15 @@ void update_momenta_PF2(const double dtau) {
   double sqsum = 0.;
   g_cgiterations2 += cg(g_X, g_fermion2, ITER_MAX, DELTACG, &gam5D_SQR_wilson);
   gam5D_wilson(g_gam5DX, g_X);
+#ifdef OMP
+#pragma omp parallel for private(f1,f2)
+#endif
   for(i = 0; i < GRIDPOINTS; i++) {
     f1 = g_musqr*trX_dQ_wilson_dalpha1_X(i);
     f2 = g_musqr*trX_dQ_wilson_dalpha2_X(i);
+#ifdef _DEBUG_
     sqsum = f1*f1 + f2*f2;
+#endif
     gp1[i] = gp1[i] - dtau*(- f1);
     gp2[i] = gp2[i] - dtau*(- f2);
   }
@@ -133,10 +143,15 @@ void update_momenta_PF1(const double dtau) {
   double sqsum = 0.;
   g_cgiterations1 += cg(g_X, g_fermion, ITER_MAX, DELTACG, &gam5D_SQR_musqr_wilson);
   gam5D_wilson(g_gam5DX, g_X);
+#ifdef OMP
+#pragma omp parallel for private(f1,f2)
+#endif
   for(i = 0; i < GRIDPOINTS; i++) {
     f1 = trX_dQ_wilson_dalpha1_X(i);
     f2 = trX_dQ_wilson_dalpha2_X(i);
+#ifdef _DEBUG_
     sqsum = f1*f1 + f2*f2;
+#endif
     gp1[i] = gp1[i] - dtau*(- f1);
     gp2[i] = gp2[i] - dtau*(- f2);
   }
@@ -151,6 +166,9 @@ void update_momenta_PF1(const double dtau) {
 void update_momenta_gauge(const double dtau) {
   int i;
   double f1=0., f2=0., sqsum = 0.;
+#ifdef OMP
+#pragma omp parallel for private (f1,f2)
+#endif
   for(i = 0; i < GRIDPOINTS; i++) {
     f1 = DS_G1(i);
     f2 = DS_G2(i);
