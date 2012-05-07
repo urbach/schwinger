@@ -5,7 +5,10 @@
 #include <getopt.h>
 #include <string.h>
 #include <unistd.h>
+
+#ifdef OMP
 #include <omp.h>
+#endif
 
 #include "statistics.h"
 #include "lattice.h"
@@ -111,8 +114,14 @@ int main(int argc, char **argv)
       thermalize_min_acc = optionDoubleValue;
     else if (strcmp(optionName, "no_timescales") == 0)
       no_timescales = optionDoubleValue;
-    else if (strcmp(optionName, "omp_nthreads") == 0)
+    else if (strcmp(optionName, "omp_nthreads") == 0){
+#ifdef OMP
       g_omp_nthreads = optionIntValue;
+#else
+      fprintf(stderr," !!!  Warning code compiled without openMP capability.\
+ Option \"--omp_nthreads\" without effect. !!! \n");
+#endif
+    }
   }
   
   // setup integration parameters
